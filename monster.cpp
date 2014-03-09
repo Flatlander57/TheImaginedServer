@@ -531,7 +531,10 @@ bool Monster::searchTarget(TargetSearchType_t searchType /*= TARGETSEARCH_DEFAUL
 	for(CreatureList::iterator it = targetList.begin(); it != targetList.end(); ++it)
 	{
 		if(followCreature != (*it) && isTarget(*it) && (searchType == TARGETSEARCH_RANDOM
-			|| searchType == TARGETSEARCH_AGGRO || canUseAttack(myPos, *it)))
+			|| canUseAttack(myPos, *it)))
+			resultList.push_back(*it);
+		else if(isTarget(*it) && (searchType == TARGETSEARCH_AGGRO
+			|| canUseAttack(myPos, *it)))
 			resultList.push_back(*it);
 	}
 
