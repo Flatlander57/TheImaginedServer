@@ -85,6 +85,8 @@ Monster::Monster(MonsterType* _mType):
 	isMasterInRange = false;
 	teleportToMaster = false;
 	setStorage("baseaggro", mType->baseAggro);
+	setStorage("distaggro", mType->distAggro);
+	setStorage("tileaggro", mType->tileAggro);
 	setStorage("group", mType->group);
 	setStorage("view", mType->viewRange);
 	spawn = NULL;
@@ -273,13 +275,11 @@ void Monster::updateTargetList()
 
 	for(it = targetList.begin(); it != targetList.end();)
 	{
-		std::string value;
-		getStorage(std::to_string((*it)->getID()), value);
-		int number = atoi(value.c_str());
-		std::string aggro;
-		getStorage("baseaggro", aggro);
-		int naggro = atoi(aggro.c_str());
-		if ((number < naggro) && (!g_config.getBool(ConfigManager::MONSTER_TARGET_DEFAULT)))
+		int32_t value = 0;
+		getIntStorage(std::to_string((*it)->getID()), value);
+		int32_t aggro = 0;
+		getIntStorage("baseaggro", aggro);
+		if ((value < aggro) && (!g_config.getBool(ConfigManager::MONSTER_TARGET_DEFAULT)))
 		{
 			(*it)->unRef();
 			it = targetList.erase(it);
@@ -296,11 +296,10 @@ void Monster::updateTargetList()
 	}
 	SpectatorVec list;
 	int32_t monstView = Map::maxViewportX;
-	std::string value;
-	getStorage("view", value);
-	int number = atoi(value.c_str());
-	if (number > monstView)
-		monstView = number;
+	int32_t value = 0;
+	getIntStorage("view", value);
+	if (value > monstView)
+		monstView = value;
 
 	g_game.getSpectators(list, getPosition(), false, false, monstView, monstView, monstView, monstView);
 	for(SpectatorVec::const_iterator it = list.begin(); it != list.end(); ++it)
@@ -447,13 +446,12 @@ bool Monster::isOpponent(const Creature* creature)
 		}
 		if(enemy)
 		{
-			std::string value;
-			getStorage(std::to_string(creature->getID()), value);
-			int number = atoi(value.c_str());
-			std::string aggro;
-			getStorage("baseaggro", aggro);
-			int naggro = atoi(aggro.c_str());
-			return (number > naggro);
+			//int32_t value = 0;
+			//getIntStorage(std::to_string(creature->getID()), value);
+			//int32_t aggro = 0;
+			//getIntStorage("baseaggro", aggro);
+			//return (value > aggro);
+			return true;
 		}
 		else
 			return false;
@@ -699,11 +697,10 @@ void Monster::updateIdleStatus()
 		//}
 		SpectatorVec list;
 		int32_t monstView = Map::maxViewportX;
-		std::string value;
-		getStorage("view", value);
-		int number = atoi(value.c_str());
-		if (number > monstView)
-			monstView = number;
+		int32_t value = 0;
+		getIntStorage("view", value);
+		if (value > monstView)
+			monstView = value;
 
 		g_game.getSpectators(list, getPosition(), false, false, monstView, monstView, monstView, monstView);
 		
@@ -742,21 +739,52 @@ void Monster::onThink(uint32_t interval)
 		setIdle(true);
 		return;
 	}
-	
+		
+	//Regeneration System
 	Condition* condition = Condition::createCondition(CONDITIONID_DEFAULT, CONDITION_REGENERATION, 1000);
+	if(healthRegen > 0) {
 	condition->setParam(CONDITIONPARAM_HEALTHGAIN, healthRegen);
-	condition->setParam(CONDITIONPARAM_HEALTHTICKS, 1000);
+	condition->setParam(CONDITIONPARAM_HEALTHTICKS, 1000); }
+	if(manaRegen > 0) {
 	condition->setParam(CONDITIONPARAM_MANAGAIN, manaRegen);
-	condition->setParam(CONDITIONPARAM_MANATICKS, 1000);
+	condition->setParam(CONDITIONPARAM_MANATICKS, 1000); }
+	if(shieldRegen > 0) {
 	condition->setParam(CONDITIONPARAM_SHIELDGAIN, shieldRegen);
-	condition->setParam(CONDITIONPARAM_SHIELDTICKS, 1000);
+	condition->setParam(CONDITIONPARAM_SHIELDTICKS, 1000); }
 	addCondition(condition);
-
 	
 	updateIdleStatus();
 	if(isIdle)
 		return;
 
+	//Aggro System
+	SpectatorVec list;
+	int32_t monstView = Map::maxViewportX;
+	int32_t value = 0;
+	getIntStorage("view", value);
+	if (value > monstView)
+		monstView = value;
+	int32_t baseAggro = 0;
+	getIntStorage("baseaggro", baseAggro);
+	int32_t distAggro = 0;
+	getIntStorage("distaggro", distAggro);
+	int32_t tileAggro = 0;
+	getIntStorage("tileaggro", tileAggro);
+
+	g_game.getSpectators(list, getPosition(), false, false, monstView, monstView, monstView, monstView);
+	
+	for(SpectatorVec::const_iterator it = list.begin(); it != list.end(); ++it) {
+		if(isOpponent(*it)) {
+			int32_t taggro = getIntStorage(std::to_string((*it)->getID()), (taggro = 0));
+			uint32_t distBetween = std::max(std::abs(((*it)->getPosition().x) - getPosition().x), std::abs(((*it)->getPosition().y + 1) - getPosition().y));
+			distBetween = std::ceil(distAggro-distBetween);
+			if(distBetween != 0) {
+				int32_t addAggro = std::ceil((distBetween*tileAggro)+taggro);
+				setStorage(std::to_string((*it)->getID()), std::to_string(addAggro));
+			}
+		}
+	}
+		
 	if(teleportToMaster && doTeleportToMaster())
 		teleportToMaster = false;
 
@@ -931,12 +959,9 @@ void Monster::onThinkTarget(uint32_t interval)
 	if(mType->changeTargetChance < random_range(1, 100))
 		return;
 	
-	int value;
-	std::string ntargetDist;
-	if(!getStorage("targetdistance", ntargetDist))
+	int32_t value = 0;
+	if(!getIntStorage("targetdistance", value))
 		value = mType->targetDistance;
-	else
-		value = atoi(ntargetDist.c_str());
 
 	if(value <= 1)
 		searchTarget(TARGETSEARCH_RANDOM);
@@ -1703,14 +1728,11 @@ void Monster::getPathSearchParams(const Creature* creature, FindPathParams& fpp)
 	fpp.minTargetDist = 1;
 
 	
-	std::string ntargetDist;
-	if(!getStorage("targetdistance", ntargetDist))
+	int32_t value = 0;
+	if(!getIntStorage("targetdistance", value))
 		fpp.maxTargetDist = mType->targetDistance;
 	else
-	{
-		int value = atoi(ntargetDist.c_str());
 		fpp.maxTargetDist = value;
-	}
 	
 	if(isSummon())
 	{
@@ -1727,14 +1749,12 @@ void Monster::getPathSearchParams(const Creature* creature, FindPathParams& fpp)
 	else if(isFleeing())
 	{
 		//Distance should be higher than the client view range (Map::maxClientViewportX/Map::maxClientViewportY)
-		std::string myString;
-		if(!getStorage("view", myString))
+		int32_t value = 0;
+		if(!getIntStorage("view", value))
 			fpp.maxTargetDist = 11;
 		else
-		{
-			int value = atoi(myString.c_str());
 			fpp.maxTargetDist = value;
-		}
+
 		fpp.clearSight = fpp.fullPathSearch = false;
 		fpp.keepDistance = true;
 	}

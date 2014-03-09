@@ -355,6 +355,7 @@ class Creature : public AutoId, virtual public Thing
 		void changeMaxBarrier(uint32_t barrierChange) {barrierMax = barrierChange;}
 		
 		virtual bool getStorage(const std::string& key, std::string& value) const;
+		virtual bool getIntStorage(const std::string& key, int value) const;
 		virtual bool setStorage(const std::string& key, const std::string& value);
 		virtual void eraseStorage(const std::string& key) {storageMap.erase(key);}
 
