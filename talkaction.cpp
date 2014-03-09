@@ -958,13 +958,13 @@ bool TalkAction::thingProporties(Creature* creature, const std::string&, const s
 				_creature->changeMana(atoi(parseParams(it, tokens.end()).c_str()));
 			else if(action == "maxmana")
 				_creature->changeMaxMana(atoi(parseParams(it, tokens.end()).c_str()));
-			else if(action == "shield" && (g_config.getBool(ConfigManager::USE_SHIELD_BAR)))
+			else if(action == "shield")
 				_creature->changeShield(atoi(parseParams(it, tokens.end()).c_str()));
-			else if(action == "maxshield" && (g_config.getBool(ConfigManager::USE_SHIELD_BAR)))
+			else if(action == "maxshield")
 				_creature->changeMaxShield(atoi(parseParams(it, tokens.end()).c_str()));
-			else if(action == "barrier" && (g_config.getBool(ConfigManager::USE_BARRIER_BAR)))
+			else if(action == "barrier")
 				_creature->changeBarrier(atoi(parseParams(it, tokens.end()).c_str()));
-			else if(action == "maxbarrier" && (g_config.getBool(ConfigManager::USE_BARRIER_BAR)))
+			else if(action == "maxbarrier")
 				_creature->changeMaxBarrier(atoi(parseParams(it, tokens.end()).c_str()));
 			else if(action == "basespeed")
 				_creature->setBaseSpeed(atoi(parseParams(it, tokens.end()).c_str()));

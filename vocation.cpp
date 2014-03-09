@@ -495,9 +495,9 @@ void Vocation::reset()
 	attackSpeed = 1500;
 	name = description = "";
 
-	gainAmount[GAIN_HEALTH] = gainAmount[GAIN_MANA] = gainAmount[GAIN_SHIELD] = gainAmount[GAIN_SOUL] = 1;
-	gain[GAIN_HEALTH] = gain[GAIN_MANA] = gain[GAIN_SHIELD] = capGain = 5;
-	gainTicks[GAIN_HEALTH] = gainTicks[GAIN_MANA] = gainTicks[GAIN_SHIELD] = 6;
+	gainAmount[GAIN_HEALTH] = gainAmount[GAIN_MANA] = gainAmount[GAIN_SHIELD] = gainAmount[GAIN_SOUL] = 0;
+	gain[GAIN_HEALTH] = gain[GAIN_MANA] = gain[GAIN_SHIELD] = capGain = 0;
+	gainTicks[GAIN_HEALTH] = gainTicks[GAIN_MANA] = gainTicks[GAIN_SHIELD] = 1;
 
 	skillBase[SKILL_SHIELD] = 100;
 	skillBase[SKILL_DIST] = 30;

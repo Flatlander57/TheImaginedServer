@@ -3448,14 +3448,8 @@ void ProtocolGame::AddCreature(NetworkMessage_ptr msg, const Creature* creature,
 	if(!creature->getHideHealth())
 	{
 		msg->put<char>((uint8_t)std::ceil(creature->getHealth() * 100. / std::max(creature->getMaxHealth(), 1)));
-		if((g_config.getBool(ConfigManager::USE_SHIELD_BAR)))
-			msg->put<char>((uint8_t)std::ceil(creature->getShield() * 100. / std::max(creature->getMaxShield(), 1)));
-		else
-			msg->put<char>(0x00);
-		if((g_config.getBool(ConfigManager::USE_BARRIER_BAR)))
-			msg->put<char>((uint8_t)std::ceil(creature->getBarrier() * 100. / std::max(creature->getMaxBarrier(), 1)));
-		else
-			msg->put<char>(0x00);
+		msg->put<char>((uint8_t)std::ceil(creature->getShield() * 100. / std::max(creature->getMaxShield(), 1)));
+		msg->put<char>((uint8_t)std::ceil(creature->getBarrier() * 100. / std::max(creature->getMaxBarrier(), 1)));
 	}
 	else
 	{
@@ -3515,7 +3509,7 @@ void ProtocolGame::AddPlayerStats(NetworkMessage_ptr msg)
 
 	msg->put<uint16_t>(player->getShield());
 	msg->put<uint16_t>(player->getPlayerInfo(PLAYERINFO_MAXSHIELD));
-	
+
 	msg->put<uint16_t>(player->getBarrier());
 	msg->put<uint16_t>(player->getPlayerInfo(PLAYERINFO_MAXBARRIER));
 	

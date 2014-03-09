@@ -4702,7 +4702,7 @@ bool Game::combatChangeHealth(const CombatParams& params, Creature* attacker, Cr
 		int32_t damage = -healthChange;
 		if(damage > 0)
 		{
-			if(target->getBarrier() > 0)
+			if(target->getBarrier() > 0 && g_config.getBool(ConfigManager::USE_BARRIER_BAR))
 			{
 				int32_t barrierDamage = std::min(target->getBarrier(), damage + elementDamage);
 				damage = std::max((int32_t)0, damage + elementDamage - barrierDamage);

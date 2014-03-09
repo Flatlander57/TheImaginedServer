@@ -1036,7 +1036,7 @@ BlockType_t Creature::blockHit(Creature* attacker, CombatType_t combatType, int3
 			minDefense = (int32_t)std::ceil(minDefense * g_config.getDouble(ConfigManager::DEFENSE_MIN));
 			maxDefense = (int32_t)std::ceil(maxDefense * g_config.getDouble(ConfigManager::DEFENSE_MAX));
 			int32_t reduct = random_range(minDefense, maxDefense);
-			if(reduct > this->getShield() && g_config.getBool(ConfigManager::USE_SHIELD_BAR))
+			if((reduct > this->getShield()) && (g_config.getBool(ConfigManager::USE_SHIELD_BAR)))
 				reduct = this->getShield();
 				
 			damage -= reduct;
