@@ -1,9 +1,29 @@
 -- The Forgotten Server Config
 
-	--Flatlander TFS Add-ons
-	seethroughwalls = false
-
-	--Sportacus TFS Add-ons
+	-- New Features
+	capSpeedLoss = true
+	levelGainSpeed = false
+	defenseMin = 1.0  -- Minimum Defense Multiplier
+	defenseMax = 1.0 -- Maximum Defense Multiplier
+	armorMin = 1.0 -- Minimum Armor Multiplier
+	armorMax = 1.0 -- Maxmimum Armor Multiplier
+	offenseDamage = 1.0 -- Damage Divider
+	balancedDamage = 1.0 -- Damage Divider
+	defenseDamage = 1.0 -- Damage Divider
+	offenseDefense = 1.0 -- Defense Multiplier
+	balancedDefense = 1.5 -- Defense Multiplier
+	defenseDefense = 2.0 -- Defense Multiplier
+	playerDamageMult = 1.0 -- Multiplier For Damage To Players
+	useSkills = false -- Use Skills (Fist Fighting, Sword Fighting, etc)
+	monsterTargetDefault = false -- Use Default Monster Target?
+	seethroughwalls = false -- Can walls block player sight?
+	longday = 900 -- How long is a Day (in seconds)
+	daypercent = 70 -- What percent of a day is light (day/night percent)
+	nightlight = 150 -- How bright is it at night
+	daylight = 250 -- How bright is it during the day
+	lightcolor = 215 -- What color is the sun light (world light)
+	useShieldBar = true -- Use the Shield Bar?
+	useBarrierBar = true -- Use the Barrier Bar?
 	showPlayerVocation = true
 	showPlayerMarriage = true
 	showPlayerGuild	= true	
