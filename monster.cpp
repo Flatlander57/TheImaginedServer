@@ -781,35 +781,36 @@ void Monster::onThink(uint32_t interval)
 	updateIdleStatus();
 	if(isIdle)
 		return;
+	if(!g_config.getBool(ConfigManager::MONSTER_TARGET_DEFAULT)) {
+		//Aggro System
+		SpectatorVec list;
+		int32_t monstView = Map::maxViewportX;
+		int32_t value = 0;
+		getIntStorage("view", value);
+		if (value > monstView)
+			monstView = value;
+		int32_t baseAggro = 0;
+		getIntStorage("baseaggro", baseAggro);
+		int32_t distAggro = 0;
+		getIntStorage("distaggro", distAggro);
+		int32_t tileAggro = 0;
+		getIntStorage("tileaggro", tileAggro);
 
-	//Aggro System
-	SpectatorVec list;
-	int32_t monstView = Map::maxViewportX;
-	int32_t value = 0;
-	getIntStorage("view", value);
-	if (value > monstView)
-		monstView = value;
-	int32_t baseAggro = 0;
-	getIntStorage("baseaggro", baseAggro);
-	int32_t distAggro = 0;
-	getIntStorage("distaggro", distAggro);
-	int32_t tileAggro = 0;
-	getIntStorage("tileaggro", tileAggro);
+		g_game.getSpectators(list, getPosition(), false, false, monstView, monstView, monstView, monstView);
 
-	g_game.getSpectators(list, getPosition(), false, false, monstView, monstView, monstView, monstView);
-
-	for(SpectatorVec::const_iterator it = list.begin(); it != list.end(); ++it) {
-		if(isOpponent(*it)) {
-			int32_t taggro = getIntStorage(std::to_string((*it)->getID()), (taggro = 0));
-			uint32_t distBetween = std::max(std::abs(((*it)->getPosition().x) - getPosition().x), std::abs(((*it)->getPosition().y + 1) - getPosition().y));
-			distBetween = std::ceil(distAggro-distBetween);
-			if(distBetween != 0) {
-				int32_t addAggro = std::ceil((distBetween*tileAggro)+taggro);
-				setStorage(std::to_string((*it)->getID()), std::to_string(addAggro));
+		for(SpectatorVec::const_iterator it = list.begin(); it != list.end(); ++it) {
+			if(isOpponent(*it)) {
+				int32_t taggro = getIntStorage(std::to_string((*it)->getID()), (taggro = 0));
+				uint32_t distBetween = std::max(std::abs(((*it)->getPosition().x) - getPosition().x), std::abs(((*it)->getPosition().y + 1) - getPosition().y));
+				distBetween = std::ceil(distAggro-distBetween);
+				if(distBetween != 0) {
+					int32_t addAggro = std::ceil((distBetween*tileAggro)+taggro);
+					setStorage(std::to_string((*it)->getID()), std::to_string(addAggro));
+				}
 			}
 		}
 	}
-
+		
 	if(teleportToMaster && doTeleportToMaster())
 		teleportToMaster = false;
 
