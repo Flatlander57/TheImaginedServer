@@ -1212,6 +1212,11 @@ bool Monsters::loadMonster(const std::string& file, const std::string& monsterNa
 				mType->tileAggro = strValue;
 			else
 				mType->tileAggro = 100;
+				
+			if(readXMLInteger(p, "perdamage", intValue))
+				mType->damageAggro = intValue;
+			else
+				mType->damageAggro = 1;
 		}
 		else if(!xmlStrcmp(p->name, (const xmlChar*)"groups"))
 		{

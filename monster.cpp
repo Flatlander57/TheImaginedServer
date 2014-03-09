@@ -531,7 +531,7 @@ bool Monster::searchTarget(TargetSearchType_t searchType /*= TARGETSEARCH_DEFAUL
 	for(CreatureList::iterator it = targetList.begin(); it != targetList.end(); ++it)
 	{
 		if(followCreature != (*it) && isTarget(*it) && (searchType == TARGETSEARCH_RANDOM
-			|| canUseAttack(myPos, *it)))
+			|| searchType == TARGETSEARCH_AGGRO || canUseAttack(myPos, *it)))
 			resultList.push_back(*it);
 	}
 
@@ -555,6 +555,24 @@ bool Monster::searchTarget(TargetSearchType_t searchType /*= TARGETSEARCH_DEFAUL
 			if(target && selectTarget(target))
 				return true;
 
+			break;
+		}
+		case TARGETSEARCH_AGGRO:
+		{
+			int taggro = 0;
+			int value = 0;
+			Creature* target = NULL;
+			for(CreatureList::iterator it = resultList.begin(); it != resultList.end(); ++it)
+			{
+				getIntStorage(std::to_string((*it)->getID()), value);
+				if(value > taggro) {
+					target = *it;
+					taggro = value;
+				}
+			}
+			if(target && selectTarget(target))
+				return true;
+			
 			break;
 		}
 		default:
@@ -616,6 +634,10 @@ void Monster::onFollowCreatureComplete(const Creature* creature)
 BlockType_t Monster::blockHit(Creature* attacker, CombatType_t combatType, int32_t& damage,
 	bool checkDefense/* = false*/, bool checkArmor/* = false*/, bool/* reflect = true*/, bool/* field = false*/, bool/* element = false*/)
 {
+	int32_t aggroGain = (int32_t)std::ceil(damage * mType->damageAggro);
+	int32_t taggro = getIntStorage(std::to_string((attacker)->getID()), (taggro = 0));
+	setStorage(std::to_string((attacker)->getID()), std::to_string((aggroGain+taggro)));
+	
 	BlockType_t blockType = Creature::blockHit(attacker, combatType, damage, checkDefense, checkArmor);
 	if(!damage)
 		return blockType;
@@ -752,7 +774,7 @@ void Monster::onThink(uint32_t interval)
 	condition->setParam(CONDITIONPARAM_SHIELDGAIN, shieldRegen);
 	condition->setParam(CONDITIONPARAM_SHIELDTICKS, 1000); }
 	addCondition(condition);
-	
+
 	updateIdleStatus();
 	if(isIdle)
 		return;
@@ -772,7 +794,7 @@ void Monster::onThink(uint32_t interval)
 	getIntStorage("tileaggro", tileAggro);
 
 	g_game.getSpectators(list, getPosition(), false, false, monstView, monstView, monstView, monstView);
-	
+
 	for(SpectatorVec::const_iterator it = list.begin(); it != list.end(); ++it) {
 		if(isOpponent(*it)) {
 			int32_t taggro = getIntStorage(std::to_string((*it)->getID()), (taggro = 0));
@@ -784,12 +806,12 @@ void Monster::onThink(uint32_t interval)
 			}
 		}
 	}
-		
+
 	if(teleportToMaster && doTeleportToMaster())
 		teleportToMaster = false;
 
 	addEventWalk();
-	
+
 	if(isSummon())
 	{
 		if(!attackedCreature)
@@ -806,7 +828,9 @@ void Monster::onThink(uint32_t interval)
 	}
 	else if(!targetList.empty())
 	{
-		if(!followCreature || !hasFollowPath)
+		if(!g_config.getBool(ConfigManager::MONSTER_TARGET_DEFAULT))
+			searchTarget(TARGETSEARCH_AGGRO);
+		else if(!followCreature || !hasFollowPath)
 			searchTarget();
 		else if(isFleeing() && attackedCreature && !canUseAttack(getPosition(), attackedCreature))
 			searchTarget(TARGETSEARCH_ATTACKRANGE);
@@ -959,14 +983,18 @@ void Monster::onThinkTarget(uint32_t interval)
 	if(mType->changeTargetChance < random_range(1, 100))
 		return;
 	
+	
 	int32_t value = 0;
 	if(!getIntStorage("targetdistance", value))
 		value = mType->targetDistance;
 
-	if(value <= 1)
-		searchTarget(TARGETSEARCH_RANDOM);
+	if(g_config.getBool(ConfigManager::MONSTER_TARGET_DEFAULT)) {
+		if(value <= 1)
+			searchTarget(TARGETSEARCH_RANDOM);
+		else
+			searchTarget(TARGETSEARCH_NEAREST); }
 	else
-		searchTarget(TARGETSEARCH_NEAREST);
+		searchTarget(TARGETSEARCH_AGGRO);
 }
 
 void Monster::doHealing(uint32_t interval)

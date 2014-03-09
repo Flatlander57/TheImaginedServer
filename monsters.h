@@ -128,6 +128,7 @@ class MonsterType
 		uint32_t yellChance, yellSpeedTicks, staticAttackChance, manaCost;
 		uint64_t experience;
 
+		int32_t damageAggro;
 		std::string name, nameDescription, file, baseAggro, distAggro, tileAggro, viewRange, group;
 		
 		SummonList summonList;
