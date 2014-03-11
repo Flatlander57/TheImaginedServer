@@ -971,19 +971,6 @@ bool Creature::getStorage(const std::string& key, std::string& value) const
 	return false;
 }
 
-bool Creature::getIntStorage(const std::string& key, int32_t value) const
-{
-	StorageMap::const_iterator it = storageMap.find(key);
-	if(it != storageMap.end())
-	{
-		value = atoi((it->second).c_str());
-		return true;
-	}
-
-	value = -1;
-	return false;
-}
-
 bool Creature::setStorage(const std::string& key, const std::string& value)
 {
 	storageMap[key] = value;
