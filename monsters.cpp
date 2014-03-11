@@ -1201,17 +1201,17 @@ bool Monsters::loadMonster(const std::string& file, const std::string& monsterNa
 			if(readXMLString(p, "baseaggro", strValue))
 				mType->baseAggro = strValue;
 			else
-				mType->baseAggro = 100;
+				mType->baseAggro = "100";
 				
 			if(readXMLString(p, "distance", strValue))
 				mType->distAggro = strValue;
 			else
-				mType->distAggro = 5;
+				mType->distAggro = "5";
 
 			if(readXMLString(p, "pertile", strValue))
 				mType->tileAggro = strValue;
 			else
-				mType->tileAggro = 100;
+				mType->tileAggro = "100";
 				
 			if(readXMLInteger(p, "perdamage", intValue))
 				mType->damageAggro = intValue;

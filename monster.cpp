@@ -275,16 +275,16 @@ void Monster::updateTargetList()
 
 	for(it = targetList.begin(); it != targetList.end();)
 	{
-		int32_t value = 0;
-		getIntStorage(std::to_string((*it)->getID()), value);
-		int32_t aggro = 0;
-		getIntStorage("baseaggro", aggro);
+
+		std::string changer; 
+		getStorage(std::to_string((*it)->getID()), changer);
+		int32_t value = atoi(changer.c_str());
+		getStorage("baseaggro", changer);
+		int32_t aggro = atoi(changer.c_str());
 		if ((value < aggro) && (!g_config.getBool(ConfigManager::MONSTER_TARGET_DEFAULT)))
 		{
 			(*it)->unRef();
 			it = targetList.erase(it);
-			setFollowCreature(NULL);
-			setAttackedCreature(NULL);
 		}
 		else if((*it)->getHealth() <= 0 || !canSee((*it)->getPosition()))
 		{
@@ -296,8 +296,9 @@ void Monster::updateTargetList()
 	}
 	SpectatorVec list;
 	int32_t monstView = Map::maxViewportX;
-	int32_t value = 0;
-	getIntStorage("view", value);
+	std::string changer;
+	getStorage("view", changer);
+	int32_t value = atoi(changer.c_str());
 	if (value > monstView)
 		monstView = value;
 
@@ -342,11 +343,29 @@ void Monster::onCreatureFound(Creature* creature, bool pushFront /*= false*/)
 		assert(creature != this);
 		if(std::find(targetList.begin(), targetList.end(), creature) == targetList.end())
 		{
-			creature->addRef();
-			if(pushFront)
-				targetList.push_front(creature);
+			if(g_config.getBool(ConfigManager::MONSTER_TARGET_DEFAULT))
+			{
+				creature->addRef();
+				if(pushFront)
+					targetList.push_front(creature);
+				else
+					targetList.push_back(creature);
+			}
 			else
-				targetList.push_back(creature);
+			{
+				std::string changer;
+				getStorage(std::to_string((creature)->getID()), changer);
+				int aggro = atoi(changer.c_str());
+				int baseAggro = atoi((mType->baseAggro).c_str());
+				if(aggro > baseAggro)
+				{
+					creature->addRef();
+					if(pushFront)
+						targetList.push_front(creature);
+					else
+						targetList.push_back(creature);
+				}
+			}
 		}
 	}
 
@@ -424,7 +443,9 @@ bool Monster::isOpponent(const Creature* creature)
 		bool enemy = false;
 		std::string mygroup;
 		creature->getStorage("group", mygroup);
-		if(creature->getPlayer() && mType->groupPlayer == 2)
+		if(creature->getPlayer() && creature->getPlayer()->hasFlag(PlayerFlag_IgnoredByMonsters))
+			enemy = false;
+		else if(creature->getPlayer() && mType->groupPlayer == 2)
 			enemy = true;
 		else
 		{
@@ -446,10 +467,12 @@ bool Monster::isOpponent(const Creature* creature)
 		}
 		if(enemy)
 		{
-			//int32_t value = 0;
-			//getIntStorage(std::to_string(creature->getID()), value);
-			//int32_t aggro = 0;
-			//getIntStorage("baseaggro", aggro);
+
+			//std::string changer;
+			//getStorage(std::to_string(creature->getID()), changer);
+			//int32_t value = atoi(changer.c_str());
+			//getStorage("baseaggro", changer);
+			//int32_t aggro = atoi(changer.c_str());
 			//return (value > aggro);
 			return true;
 		}
@@ -533,9 +556,6 @@ bool Monster::searchTarget(TargetSearchType_t searchType /*= TARGETSEARCH_DEFAUL
 		if(followCreature != (*it) && isTarget(*it) && (searchType == TARGETSEARCH_RANDOM
 			|| canUseAttack(myPos, *it)))
 			resultList.push_back(*it);
-		else if(isTarget(*it) && (searchType == TARGETSEARCH_AGGRO
-			|| canUseAttack(myPos, *it)))
-			resultList.push_back(*it);
 	}
 
 	switch(searchType)
@@ -562,21 +582,29 @@ bool Monster::searchTarget(TargetSearchType_t searchType /*= TARGETSEARCH_DEFAUL
 		}
 		case TARGETSEARCH_AGGRO:
 		{
-			int taggro = 0;
+			int taggro = atoi((mType->baseAggro).c_str());
+			std::string changer;
+			if(followCreature) {
+				getStorage(std::to_string((followCreature)->getID()), changer);
+				taggro = atoi(changer.c_str()); }
+				
 			int value = 0;
 			Creature* target = NULL;
-			for(CreatureList::iterator it = resultList.begin(); it != resultList.end(); ++it)
+			for(CreatureList::iterator it = targetList.begin(); it != targetList.end(); ++it)
 			{
-				getIntStorage(std::to_string((*it)->getID()), value);
-				if(value > taggro) {
+				getStorage(std::to_string((*it)->getID()), changer);
+				value = atoi(changer.c_str());
+				if(value > taggro && (*it) != followCreature) {
 					target = *it;
 					taggro = value;
 				}
 			}
-			if(target && selectTarget(target))
-				return true;
+			if(target) {
+				setStorage(std::to_string((target)->getID()), std::to_string(taggro*10));
+				selectTarget(target);
+			}
 			
-			break;
+			return true;
 		}
 		default:
 		{
@@ -638,7 +666,9 @@ BlockType_t Monster::blockHit(Creature* attacker, CombatType_t combatType, int32
 	bool checkDefense/* = false*/, bool checkArmor/* = false*/, bool/* reflect = true*/, bool/* field = false*/, bool/* element = false*/)
 {
 	int32_t aggroGain = (int32_t)std::ceil(damage * mType->damageAggro);
-	int32_t taggro = getIntStorage(std::to_string((attacker)->getID()), (taggro = 0));
+	std::string changer;
+	getStorage(std::to_string((attacker)->getID()), changer);
+	int32_t taggro = atoi(changer.c_str());
 	setStorage(std::to_string((attacker)->getID()), std::to_string((aggroGain+taggro)));
 	
 	BlockType_t blockType = Creature::blockHit(attacker, combatType, damage, checkDefense, checkArmor);
@@ -710,7 +740,9 @@ void Monster::setIdle(bool _idle)
 void Monster::updateIdleStatus()
 {
 	bool idle = true;
-
+	std::string changer;
+	getStorage("threat", changer);
+	int32_t threat = atoi(changer.c_str());
 	if(mType->alwaysactive == 1)
 		idle = false;
 	else
@@ -722,8 +754,8 @@ void Monster::updateIdleStatus()
 		//}
 		SpectatorVec list;
 		int32_t monstView = Map::maxViewportX;
-		int32_t value = 0;
-		getIntStorage("view", value);
+		getStorage("view", changer);
+		int32_t value = atoi(changer.c_str());
 		if (value > monstView)
 			monstView = value;
 
@@ -735,6 +767,12 @@ void Monster::updateIdleStatus()
 				idle=false;
 		
 		}
+	}
+	if(idle == true && threat > 0)
+	{
+		threat = threat - 1;
+		setStorage("threat", std::to_string(threat));
+		idle = false; 
 	}
 	setIdle(idle);
 }
@@ -779,32 +817,47 @@ void Monster::onThink(uint32_t interval)
 	addCondition(condition);
 
 	updateIdleStatus();
+	if(!g_config.getBool(ConfigManager::MONSTER_TARGET_DEFAULT))
+		updateTargetList();
+
 	if(isIdle)
 		return;
+		
 	if(!g_config.getBool(ConfigManager::MONSTER_TARGET_DEFAULT)) {
+		std::string changer;
+		getStorage("threat", changer);
+		int32_t threat = atoi(changer.c_str());
+		if(threat < 60)
+			threat = (threat + 1);
+		setStorage("threat", std::to_string(threat));
 		//Aggro System
 		SpectatorVec list;
 		int32_t monstView = Map::maxViewportX;
-		int32_t value = 0;
-		getIntStorage("view", value);
+		getStorage("view", changer);
+		int32_t value = atoi((changer).c_str());
 		if (value > monstView)
 			monstView = value;
-		int32_t baseAggro = 0;
-		getIntStorage("baseaggro", baseAggro);
-		int32_t distAggro = 0;
-		getIntStorage("distaggro", distAggro);
-		int32_t tileAggro = 0;
-		getIntStorage("tileaggro", tileAggro);
 
+		getStorage("distaggro", changer);
+		int32_t distAggro = atoi((changer).c_str());
+		getStorage("tileaggro", changer);
+		int32_t tileAggro = atoi((changer).c_str());
+		
 		g_game.getSpectators(list, getPosition(), false, false, monstView, monstView, monstView, monstView);
 
 		for(SpectatorVec::const_iterator it = list.begin(); it != list.end(); ++it) {
 			if(isOpponent(*it)) {
-				int32_t taggro = getIntStorage(std::to_string((*it)->getID()), (taggro = 0));
-				uint32_t distBetween = std::max(std::abs(((*it)->getPosition().x) - getPosition().x), std::abs(((*it)->getPosition().y + 1) - getPosition().y));
-				distBetween = std::ceil(distAggro-distBetween);
+				std::string changer;
+				
+				getStorage(std::to_string((*it)->getID()), changer);
+				int32_t taggro = atoi((changer).c_str());
+				taggro = std::ceil(taggro*0.75);
+				int32_t distBetween = std::max(std::abs(((*it)->getPosition().x) - getPosition().x), std::abs(((*it)->getPosition().y) - getPosition().y));
+				distBetween = distAggro-distBetween;
 				if(distBetween != 0) {
 					int32_t addAggro = std::ceil((distBetween*tileAggro)+taggro);
+					if(addAggro < 0)
+						addAggro = 0;
 					setStorage(std::to_string((*it)->getID()), std::to_string(addAggro));
 				}
 			}
@@ -959,7 +1012,7 @@ bool Monster::canUseSpell(const Position& pos, const Position& targetPos,
 
 void Monster::onThinkTarget(uint32_t interval)
 {
-	if(isSummon() || mType->changeTargetSpeed <= 0)
+	if(isSummon() || mType->changeTargetSpeed <= 0 || !g_config.getBool(ConfigManager::MONSTER_TARGET_DEFAULT))
 		return;
 
 	bool canChangeTarget = true;
@@ -987,18 +1040,17 @@ void Monster::onThinkTarget(uint32_t interval)
 	if(mType->changeTargetChance < random_range(1, 100))
 		return;
 	
-	
+	std::string changer;
 	int32_t value = 0;
-	if(!getIntStorage("targetdistance", value))
+	if(!getStorage("targetdistance", changer))
 		value = mType->targetDistance;
-
-	if(g_config.getBool(ConfigManager::MONSTER_TARGET_DEFAULT)) {
-		if(value <= 1)
-			searchTarget(TARGETSEARCH_RANDOM);
-		else
-			searchTarget(TARGETSEARCH_NEAREST); }
 	else
-		searchTarget(TARGETSEARCH_AGGRO);
+		value = atoi((changer).c_str());
+		
+	if(value <= 1)
+		searchTarget(TARGETSEARCH_RANDOM);
+	else
+		searchTarget(TARGETSEARCH_NEAREST); 
 }
 
 void Monster::doHealing(uint32_t interval)
@@ -1760,11 +1812,11 @@ void Monster::getPathSearchParams(const Creature* creature, FindPathParams& fpp)
 	fpp.minTargetDist = 1;
 
 	
-	int32_t value = 0;
-	if(!getIntStorage("targetdistance", value))
+	std::string changer;
+	if(!getStorage("targetdistance", changer))
 		fpp.maxTargetDist = mType->targetDistance;
 	else
-		fpp.maxTargetDist = value;
+		fpp.maxTargetDist = atoi((changer).c_str());
 	
 	if(isSummon())
 	{
@@ -1781,11 +1833,11 @@ void Monster::getPathSearchParams(const Creature* creature, FindPathParams& fpp)
 	else if(isFleeing())
 	{
 		//Distance should be higher than the client view range (Map::maxClientViewportX/Map::maxClientViewportY)
-		int32_t value = 0;
-		if(!getIntStorage("view", value))
+		std::string changer;
+		if(!getStorage("view", changer))
 			fpp.maxTargetDist = 11;
 		else
-			fpp.maxTargetDist = value;
+			fpp.maxTargetDist = atoi((changer).c_str());
 
 		fpp.clearSight = fpp.fullPathSearch = false;
 		fpp.keepDistance = true;
