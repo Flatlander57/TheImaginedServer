@@ -618,6 +618,8 @@ class Player : public Creature, public Cylinder
 			{if(client) client->sendCreatureType(creatureId, creatureType);}
 		void sendCreatureEmblem(const Creature* creature)
 			{if(client) client->sendCreatureEmblem(creature);}
+		void sendCreatureSpeechBubble(const Creature* creature)
+			{if(client) client->sendCreatureSpeechBubble(creature);}
 		void sendCreatureWalkthrough(const Creature* creature, bool walkthrough)
 			{if(client) client->sendCreatureWalkthrough(creature, walkthrough);}
 		void sendSpellCooldown(Spells_t icon, uint32_t cooldown)

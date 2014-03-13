@@ -994,6 +994,11 @@ bool TalkAction::thingProporties(Creature* creature, const std::string&, const s
 				_creature->setEmblem(getEmblems(parseParams(it, tokens.end())));
 				g_game.updateCreatureEmblem(_creature);
 			}
+			else if(action == "speechbubble")
+			{
+				_creature->setSpeechBubble(getSpeechBubbles(parseParams(it, tokens.end())));
+				g_game.updateCreatureSpeechBubble(_creature);
+			}
 			else if(action == "speaktype")
 				_creature->setSpeakType((MessageClasses)atoi(parseParams(it, tokens.end()).c_str()));
 			else if(Player* _player = _creature->getPlayer())

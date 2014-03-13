@@ -220,6 +220,7 @@ class ProtocolGame : public Protocol
 		void sendCreaturePShield(const Creature* creature);
 		void sendCreatureType(uint32_t creatureId, uint8_t creatureType);
 		void sendCreatureEmblem(const Creature* creature) {reloadCreature(creature);}
+		void sendCreatureSpeechBubble(const Creature* creature) {reloadCreature(creature);}
 		void sendCreatureWalkthrough(const Creature* creature, bool walkthrough);
 
 		void sendShop(Npc* npc, const ShopInfoList& shop);

@@ -3470,6 +3470,7 @@ void ProtocolGame::AddCreature(NetworkMessage_ptr msg, const Creature* creature,
 	msg->put<uint16_t>(creature->getStepSpeed() / 2);
 	msg->put<char>(player->getSkullType(creature));
 	msg->put<char>(player->getPartyShield(creature));
+	msg->put<char>(player->getSpeechBubble(creature));
 	if(!known)
 		msg->put<char>(player->getGuildEmblem(creature));
 

@@ -2292,6 +2292,13 @@ void LuaInterface::registerFunctions()
 	//doCreatureSetGuildEmblem(cid, emblem)
 	lua_register(m_luaState, "doCreatureSetGuildEmblem", LuaInterface::luaDoCreatureSetGuildEmblem);
 
+	//getCreatureSpeechBubble(cid[, target])
+	lua_register(m_luaState, "getCreatureSpeechBubble", LuaInterface::luaGetCreatureSpeechBubble);
+
+	//doCreatureSetSpeechBubble(cid, speechbubble)
+	lua_register(m_luaState, "doCreatureSetSpeechBubble", LuaInterface::luaDoCreatureSetSpeechBubble);
+	
+	
 	//getCreaturePartyShield(cid[, target])
 	lua_register(m_luaState, "getCreaturePartyShield", LuaInterface::luaGetCreaturePartyShield);
 
@@ -2609,6 +2616,9 @@ void LuaInterface::registerFunctions()
 
 	//doUpdateHouseAuctions()
 	lua_register(m_luaState, "doUpdateHouseAuctions", LuaInterface::luaDoUpdateHouseAuctions);
+	
+	//getTimeSinceLastMove(cid) ms
+    lua_register(m_luaState, "getTimeSinceLastMove", LuaInterface::luaGetTimeSinceLastMove);
 
 	//loadmodlib(lib)
 	lua_register(m_luaState, "loadmodlib", LuaInterface::luaL_loadmodlib);
@@ -7298,6 +7308,7 @@ int32_t LuaInterface::luaGetMonsterInfo(lua_State* L)
 	setField(L, "skull", mType->skull);
 	setField(L, "partyShield", mType->partyShield);
 	setField(L, "guildEmblem", mType->guildEmblem);
+	setField(L, "speechBubble", mType->speechBubble);
 	setFieldBool(L, "summonable", mType->isSummonable);
 	setFieldBool(L, "illusionable", mType->isIllusionable);
 	setFieldBool(L, "convinceable", mType->isConvinceable);
@@ -8820,6 +8831,55 @@ int32_t LuaInterface::luaDoCreatureSetGuildEmblem(lua_State* L)
 	{
 		creature->setEmblem(emblem);
 		g_game.updateCreatureEmblem(creature);
+		lua_pushboolean(L, true);
+	}
+	else
+	{
+		errorEx(getError(LUA_ERROR_CREATURE_NOT_FOUND));
+		lua_pushboolean(L, false);
+	}
+
+	return 1;
+}
+
+int32_t LuaInterface::luaGetCreatureSpeechBubble(lua_State* L)
+{
+	//getCreatureSpeechBubble(cid[, target])
+	uint32_t tid = 0;
+	if(lua_gettop(L) > 1)
+		tid = popNumber(L);
+
+	ScriptEnviroment* env = getEnv();
+	if(Creature* creature = env->getCreatureByUID(popNumber(L)))
+	{
+		if(!tid)
+			lua_pushnumber(L, creature->getSpeechBubble());
+		else if(Creature* target = env->getCreatureByUID(tid))
+			lua_pushnumber(L, creature->getSpeechBubble(target));
+		else
+		{
+			errorEx(getError(LUA_ERROR_CREATURE_NOT_FOUND));
+			lua_pushboolean(L, false);
+		}
+	}
+	else
+	{
+		errorEx(getError(LUA_ERROR_CREATURE_NOT_FOUND));
+		lua_pushboolean(L, false);
+	}
+
+	return 1;
+}
+
+int32_t LuaInterface::luaDoCreatureSetSpeechBubble(lua_State* L)
+{
+	//doCreatureSetSpeechBubble(cid, speechBubble)
+	SpeechBubbles_t speechBubble = (SpeechBubbles_t)popNumber(L);
+	ScriptEnviroment* env = getEnv();
+	if(Creature* creature = env->getCreatureByUID(popNumber(L)))
+	{
+		creature->setSpeechBubble(speechBubble);
+		g_game.updateCreatureSpeechBubble(creature);
 		lua_pushboolean(L, true);
 	}
 	else
@@ -10796,6 +10856,21 @@ int32_t LuaInterface::luaDoUpdateHouseAuctions(lua_State* L)
 	//doUpdateHouseAuctions()
 	lua_pushboolean(L, g_game.getMap()->updateAuctions());
 	return 1;
+}
+
+int32_t LuaInterface::luaGetTimeSinceLastMove(lua_State* L)
+{
+    //getTimeSinceLastMove(cid)
+    ScriptEnviroment* env = getEnv();
+    Creature* creature = env->getCreatureByUID(popNumber(L));
+    if(!creature)
+    {
+        errorEx(getError(LUA_ERROR_CREATURE_NOT_FOUND));
+        lua_pushboolean(L, false);
+        return 1;
+    }
+    lua_pushnumber(L, creature->getTimeSinceLastMove());
+    return 1;
 }
 
 int32_t LuaInterface::luaGetItemIdByName(lua_State* L)

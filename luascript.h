@@ -422,6 +422,8 @@ class LuaInterface
 		static int32_t luaDoCreatureSetSpeakType(lua_State* L);
 		static int32_t luaGetCreatureGuildEmblem(lua_State* L);
 		static int32_t luaDoCreatureSetGuildEmblem(lua_State* L);
+		static int32_t luaGetCreatureSpeechBubble(lua_State* L);
+		static int32_t luaDoCreatureSetSpeechBubble(lua_State* L);
 		static int32_t luaGetCreaturePartyShield(lua_State* L);
 		static int32_t luaDoCreatureSetPartyShield(lua_State* L);
 		static int32_t luaGetCreatureSkullType(lua_State* L);
@@ -719,7 +721,9 @@ class LuaInterface
 		static int32_t luaGetMountInfo(lua_State* L);
 		static int32_t luaIsPlayerUsingOtclient(lua_State* L);
 		static int32_t luaDoSendPlayerExtendedOpcode(lua_State* L);
-
+		static int32_t luaGetTimeSinceLastMove(lua_State* L);
+		
+		
 		static int32_t luaL_errors(lua_State* L);
 		static int32_t luaL_loadmodlib(lua_State* L);
 		static int32_t luaL_domodlib(lua_State* L);

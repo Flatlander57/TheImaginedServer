@@ -5633,6 +5633,19 @@ void Game::updateCreatureEmblem(Creature* creature)
 	}
 }
 
+void Game::updateCreatureSpeechBubble(Creature* creature)
+{
+	const SpectatorVec& list = getSpectators(creature->getPosition());
+
+	//send to client
+	Player* tmpPlayer = NULL;
+	for(SpectatorVec::const_iterator it = list.begin(); it != list.end(); ++it)
+	{
+		if((tmpPlayer = (*it)->getPlayer()))
+			tmpPlayer->sendCreatureSpeechBubble(creature);
+	}
+}
+
 void Game::updateCreatureWalkthrough(Creature* creature)
 {
 	const SpectatorVec& list = getSpectators(creature->getPosition());

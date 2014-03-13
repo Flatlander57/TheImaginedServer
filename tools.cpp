@@ -866,6 +866,24 @@ GuildEmblems_t getEmblems(std::string strValue)
 	return GUILDEMBLEM_NONE;
 }
 
+SpeechBubbles_t getSpeechBubbles(std::string strValue)
+{
+	std::string tmpStrValue = asLowerCaseString(strValue);
+	if(tmpStrValue == "tradequest" || tmpStrValue == "4")
+		return SPEECHBUBBLE_QUESTTRADER;
+
+	if(tmpStrValue == "trade" || tmpStrValue == "3")
+		return SPEECHBUBBLE_TRADE;
+
+	if(tmpStrValue == "quest" || tmpStrValue == "2")
+		return SPEECHBUBBLE_QUEST;
+
+	if(tmpStrValue == "chat" || tmpStrValue == "1")
+		return SPEECHBUBBLE_CHAT;
+
+	return SPEECHBUBBLE_NONE;
+}
+
 Direction getDirection(std::string string)
 {
 	if(string == "north" || string == "n" || string == "0")

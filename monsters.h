@@ -120,6 +120,7 @@ class MonsterType
 		Skulls_t skull;
 		PartyShields_t partyShield;
 		GuildEmblems_t guildEmblem;
+		SpeechBubbles_t speechBubble;		
 		LootMessage_t lootMessage;
 
 		int32_t defense, armor, health, healthMin, healthMax, healthRegen, mana, manaMin, manaRegen, manaMax, shield, shieldMin, shieldRegen, shieldMax, barrier, barrierMin, barrierMax, baseSpeed, lookCorpse, corpseUnique, corpseAction,

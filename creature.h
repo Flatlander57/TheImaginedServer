@@ -233,7 +233,7 @@ class Creature : public AutoId, virtual public Thing
 
 		virtual int32_t getThrowRange() const {return 1;}
 		virtual RaceType_t getRace() const {return RACE_NONE;}
-
+		
 		virtual bool isPushable() const {return getWalkDelay() <= 0;}
 		virtual bool canSeeInvisibility() const {return false;}
 
@@ -450,6 +450,11 @@ class Creature : public AutoId, virtual public Thing
 		virtual GuildEmblems_t getEmblem() const {return guildEmblem;}
 		virtual GuildEmblems_t getGuildEmblem(const Creature* creature) const {return creature->getEmblem();}
 
+		virtual void setSpeechBubble(SpeechBubbles_t newSpeechBubble) {speechBubble = newSpeechBubble;}
+		virtual SpeechBubbles_t getSpeechBubble() const {return speechBubble;}
+		virtual SpeechBubbles_t getSpeechBubble(const Creature* creature) const {return creature->getSpeechBubble();}
+
+		
 		virtual void setDropLoot(lootDrop_t _lootDrop) {lootDrop = _lootDrop;}
 		virtual void setLossSkill(bool _skillLoss) {skillLoss = _skillLoss;}
 
@@ -522,6 +527,8 @@ class Creature : public AutoId, virtual public Thing
 		Skulls_t skull;
 		PartyShields_t partyShield;
 		GuildEmblems_t guildEmblem;
+		SpeechBubbles_t speechBubble;
+
 		Direction direction;
 		ConditionList conditions;
 		LightInfo internalLight;

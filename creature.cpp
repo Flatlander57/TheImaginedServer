@@ -57,7 +57,9 @@ Creature::Creature()
 	skull = SKULL_NONE;
 	partyShield = SHIELD_NONE;
 	guildEmblem = GUILDEMBLEM_NONE;
+	speechBubble = SPEECHBUBBLE_NONE;
 
+	
 	health = 1000;
 	healthMax = 1000;
 	mana = 0;

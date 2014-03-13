@@ -147,6 +147,7 @@ bool parseIntegerVec(std::string str, IntegerVec& intVector);
 Skulls_t getSkulls(std::string strValue);
 PartyShields_t getPShields(std::string strValue);
 GuildEmblems_t getEmblems(std::string strValue);
+SpeechBubbles_t getSpeechBubbles(std::string strValue);
 
 Direction getDirection(std::string string);
 Direction getDirectionTo(Position pos1, Position pos2, bool extended = true);

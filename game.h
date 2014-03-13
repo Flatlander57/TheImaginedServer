@@ -577,6 +577,7 @@ class Game
 		void updateCreaturePShield(Creature* creature);
 		void updateCreatureType(Creature* creature);
 		void updateCreatureEmblem(Creature* creature);
+		void updateCreatureSpeechBubble(Creature* creature);		
 		void updateCreatureWalkthrough(Creature* creature);
 
 		GameState_t getGameState() const {return gameState;}
