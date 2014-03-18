@@ -330,6 +330,8 @@ void Npc::reload()
 
 	if(walkTicks)
 		addEventWalk();
+	else if(!focusCreature)
+		g_game.internalCreatureTurn(this, baseDirection);
 }
 
 bool Npc::loadFromXml()
@@ -1198,6 +1200,8 @@ void Npc::onCreatureAppear(const Creature* creature)
 	{
 		if(walkTicks)
 			addEventWalk();
+		else if(!focusCreature)
+			g_game.internalCreatureTurn(this, baseDirection);
 
 		if(m_npcEventHandler)
 			m_npcEventHandler->onCreatureAppear(creature);
@@ -1337,6 +1341,7 @@ void Npc::onThink(uint32_t interval)
 	if(m_npcEventHandler)
 		m_npcEventHandler->onThink();
 
+
 	std::vector<Player*> list;
 	Player* tmpPlayer = NULL;
 
@@ -1381,7 +1386,10 @@ void Npc::onThink(uint32_t interval)
 
 	if(getTimeSinceLastMove() >= walkTicks)
 		addEventWalk();
-
+	
+	if(!walkTicks && !focusCreature)
+		g_game.internalCreatureTurn(this, baseDirection);
+	
 	isIdle = true;
 	for(StateList::iterator it = stateList.begin(); it != stateList.end();)
 	{
@@ -2091,6 +2099,8 @@ void Npc::setCreatureFocus(Creature* creature)
 	if(!creature)
 	{
 		focusCreature = 0;
+		if(!walkTicks)
+			g_game.internalCreatureTurn(this, baseDirection);
 		return;
 	}
 
