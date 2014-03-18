@@ -4132,7 +4132,7 @@ int32_t LuaInterface::luaDoPlayerAddItem(lua_State* L)
 		count = popNumber(L);
 
 	uint32_t itemId = popNumber(L);
-	if(slot > SLOT_AMMO)
+	if(slot >= SLOT_LAST)
 	{
 		errorEx("Invalid slot");
 		lua_pushboolean(L, false);
@@ -4213,7 +4213,7 @@ int32_t LuaInterface::luaDoPlayerAddItemEx(lua_State* L)
 		canDropOnMap = popBoolean(L);
 
 	uint32_t uid = (uint32_t)popNumber(L);
-	if(slot > SLOT_AMMO)
+	if(slot >= SLOT_LAST)
 	{
 		errorEx("Invalid slot");
 		lua_pushboolean(L, false);
