@@ -87,6 +87,11 @@ Monster::Monster(MonsterType* _mType):
 	setStorage("baseaggro", mType->baseAggro);
 	setStorage("distaggro", mType->distAggro);
 	setStorage("tileaggro", mType->tileAggro);
+	setStorage("threatmult", mType->threatNormal);
+	setStorage("threathealthmult", mType->threatHealth);
+	setStorage("threatmanamult", mType->threatMana);
+	setStorage("threatbarriermult", mType->threatBarrier);
+	setStorage("threat", "0");
 	setStorage("group", mType->group);
 	setStorage("view", mType->viewRange);
 	spawn = NULL;
@@ -281,7 +286,9 @@ void Monster::updateTargetList()
 		int32_t value = atoi(changer.c_str());
 		getStorage("baseaggro", changer);
 		int32_t aggro = atoi(changer.c_str());
-		if ((value < aggro) && (!g_config.getBool(ConfigManager::MONSTER_TARGET_DEFAULT)))
+		int32_t threat;
+		getThreat(*it, threat);
+		if (((value+threat) < aggro) && (!g_config.getBool(ConfigManager::MONSTER_TARGET_DEFAULT)))
 		{
 			(*it)->unRef();
 			it = targetList.erase(it);
@@ -356,8 +363,11 @@ void Monster::onCreatureFound(Creature* creature, bool pushFront /*= false*/)
 				std::string changer;
 				getStorage(std::to_string((creature)->getID()), changer);
 				int aggro = atoi(changer.c_str());
-				int baseAggro = atoi((mType->baseAggro).c_str());
-				if(aggro > baseAggro)
+				getStorage("baseaggro", changer);
+				int baseAggro = atoi(changer.c_str());
+				int32_t threat;
+				getThreat(creature, threat);
+				if((aggro+threat) > baseAggro)
 				{
 					creature->addRef();
 					if(pushFront)
@@ -406,7 +416,7 @@ bool Monster::isFriend(const Creature* creature)
 		creature->getStorage("group", mygroup);
 		if(creature->getPlayer() && mType->groupPlayer == 1)
 			friendly = true;
-		else
+		else if(!creature->getPlayer())
 		{
 			if(mType->groupType == 1 || (mType->group == mygroup))
 				friendly = true;
@@ -447,7 +457,7 @@ bool Monster::isOpponent(const Creature* creature)
 			enemy = false;
 		else if(creature->getPlayer() && mType->groupPlayer == 2)
 			enemy = true;
-		else
+		else if(!creature->getPlayer())
 		{
 			if(mType->groupType == 2 && (!(mType->group == mygroup)))
 				enemy = true;
@@ -582,19 +592,21 @@ bool Monster::searchTarget(TargetSearchType_t searchType /*= TARGETSEARCH_DEFAUL
 		}
 		case TARGETSEARCH_AGGRO:
 		{
-			int taggro = atoi((mType->baseAggro).c_str());
+			int32_t taggro = atoi((mType->baseAggro).c_str());
 			std::string changer;
 			if(followCreature) {
 				getStorage(std::to_string((followCreature)->getID()), changer);
 				taggro = atoi(changer.c_str()); }
 				
-			int value = 0;
+			int32_t value = 0;
+			int32_t threat = 0;
 			Creature* target = NULL;
 			for(CreatureList::iterator it = targetList.begin(); it != targetList.end(); ++it)
 			{
 				getStorage(std::to_string((*it)->getID()), changer);
 				value = atoi(changer.c_str());
-				if(value > taggro && (*it) != followCreature) {
+				getThreat(*it, threat);
+				if((value+threat) > taggro && (*it) != followCreature) {
 					target = *it;
 					taggro = value;
 				}
@@ -741,8 +753,8 @@ void Monster::updateIdleStatus()
 {
 	bool idle = true;
 	std::string changer;
-	getStorage("threat", changer);
-	int32_t threat = atoi(changer.c_str());
+	getStorage("activethreat", changer);
+	int32_t activethreat = atoi(changer.c_str());
 	if(mType->alwaysactive == 1)
 		idle = false;
 	else
@@ -768,10 +780,10 @@ void Monster::updateIdleStatus()
 		
 		}
 	}
-	if(idle == true && threat > 0)
+	if(idle == true && activethreat > 0)
 	{
-		threat = threat - 1;
-		setStorage("threat", std::to_string(threat));
+		activethreat = activethreat-1;
+		setStorage("activethreat", std::to_string(activethreat));
 		idle = false; 
 	}
 	setIdle(idle);
@@ -825,11 +837,11 @@ void Monster::onThink(uint32_t interval)
 		
 	if(!g_config.getBool(ConfigManager::MONSTER_TARGET_DEFAULT)) {
 		std::string changer;
-		getStorage("threat", changer);
-		int32_t threat = atoi(changer.c_str());
-		if(threat < 60)
-			threat = (threat + 1);
-		setStorage("threat", std::to_string(threat));
+		getStorage("activethreat", changer);
+		int32_t activethreat = atoi(changer.c_str());
+		if(activethreat < 60)
+			activethreat = (activethreat + 1);
+		setStorage("activethreat", std::to_string(activethreat));
 		//Aggro System
 		SpectatorVec list;
 		int32_t monstView = Map::maxViewportX;
@@ -1554,6 +1566,36 @@ bool Monster::getCombatValues(int32_t& min, int32_t& max)
 
 	min = (int32_t)(minCombatValue * multiplier);
 	max = (int32_t)(maxCombatValue * multiplier);
+	return true;
+}
+
+bool Monster::getThreat(Creature* creature, int32_t& value)
+{
+	if(!creature)
+		return false;
+		
+	std::string changer;
+
+	(creature)->getStorage("threatmult", changer);
+	int32_t threatmult = atoi(changer.c_str());
+	(creature)->getStorage("threathealthmult", changer);
+	int32_t threathealthmult = atoi(changer.c_str());
+	(creature)->getStorage("threatmanamult", changer);
+	int32_t threatmanamult = atoi(changer.c_str());
+	(creature)->getStorage("threatbarriermult", changer);
+	int32_t threatbarriermult = atoi(changer.c_str());
+	
+	int32_t threat = 0;
+	(creature)->getStorage("threat", changer);
+	threat = threat + (atoi(changer.c_str())*threatmult);
+	(creature)->getStorage("threathealth", changer);
+	threat = threat + (atoi(changer.c_str())*threathealthmult);
+	(creature)->getStorage("threatmana", changer);
+	threat = threat + (atoi(changer.c_str())*threatmanamult);
+	(creature)->getStorage("threatbarrier", changer);
+	threat = threat + (atoi(changer.c_str())*threatbarriermult);
+	
+	value = threat;
 	return true;
 }
 

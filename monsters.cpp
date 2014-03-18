@@ -1219,6 +1219,28 @@ bool Monsters::loadMonster(const std::string& file, const std::string& monsterNa
 			else
 				mType->damageAggro = 1;
 		}
+		else if(!xmlStrcmp(p->name, (const xmlChar*)"threat"))
+		{
+			if(readXMLString(p, "threatnormal", strValue))
+				mType->threatNormal = strValue;
+			else
+				mType->threatNormal = "1";
+				
+			if(readXMLString(p, "threathealth", strValue))
+				mType->threatHealth = strValue;
+			else
+				mType->threatHealth = "1";
+
+			if(readXMLString(p, "threatmana", strValue))
+				mType->threatMana = strValue;
+			else
+				mType->threatMana = "1";
+				
+			if(readXMLString(p, "threatbarrier", strValue))
+				mType->threatBarrier = strValue;
+			else
+				mType->threatBarrier = "1";
+		}
 		else if(!xmlStrcmp(p->name, (const xmlChar*)"groups"))
 		{
 			if(readXMLString(p, "name", strValue))

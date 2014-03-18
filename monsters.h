@@ -130,7 +130,7 @@ class MonsterType
 		uint64_t experience;
 
 		int32_t damageAggro;
-		std::string name, nameDescription, file, baseAggro, distAggro, tileAggro, viewRange, group;
+		std::string name, nameDescription, file, baseAggro, threatNormal, threatHealth, threatMana, threatBarrier, distAggro, tileAggro, viewRange, group;
 		
 		SummonList summonList;
 		GroupList groupList;

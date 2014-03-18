@@ -1986,6 +1986,21 @@ uint32_t Player::getNextActionTime(bool scheduler/* = true*/) const
 void Player::onThink(uint32_t interval)
 {
 	Creature::onThink(interval);
+
+	std::string changer;
+	getStorage("threathealth", changer);
+	int32_t threathealth = (int32_t)std::ceil(atoi(changer.c_str())*0.75);
+	getStorage("threatmana", changer);
+	int32_t threatmana = (int32_t)std::ceil(atoi(changer.c_str())*0.75);
+	getStorage("threatbarrier", changer);
+	int32_t threatbarrier = (int32_t)std::ceil(atoi(changer.c_str())*0.75);
+	
+
+	setStorage("threathealth", std::to_string(threathealth));
+	setStorage("threatmana", std::to_string(threatmana));
+	setStorage("threatbarrier", std::to_string(threatbarrier));
+	
+	
 	int64_t timeNow = OTSYS_TIME();
 	if(timeNow - lastPing >= 5000)
 	{

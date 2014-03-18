@@ -4606,7 +4606,7 @@ bool Game::combatChangeHealth(const CombatParams& params, Creature* attacker, Cr
 	{
 		if(!force && target->getHealth() <= 0)
 			return false;
-
+		
 		bool deny = false;
 		CreatureEventList statsChangeEvents = target->getCreatureEvents(CREATURE_EVENT_STATSCHANGE);
 		for(CreatureEventList::iterator it = statsChangeEvents.begin(); it != statsChangeEvents.end(); ++it)
@@ -4618,6 +4618,13 @@ bool Game::combatChangeHealth(const CombatParams& params, Creature* attacker, Cr
 		if(deny)
 			return false;
 
+		if((attacker) && attacker->getCreature()) {
+			std::string changer;
+			(attacker)->getStorage("threathealth", changer);
+			int32_t threat = atoi(changer.c_str());
+			threat = threat + healthChange;
+			(attacker)->getStorage("threathealth", std::to_string(threat)); }
+				
 		int32_t oldHealth = target->getHealth();
 		target->gainHealth(attacker, healthChange);
 		if(oldHealth != target->getHealth() && g_config.getBool(ConfigManager::SHOW_HEALTH_CHANGE) && !target->isGhost() &&
@@ -4883,6 +4890,13 @@ bool Game::combatChangeMana(Creature* attacker, Creature* target, int32_t manaCh
 		if(deny)
 			return false;
 
+		if((attacker) && attacker->getCreature()) {
+			std::string changer;
+			(attacker)->getStorage("threatmana", changer);
+			int32_t threat = atoi(changer.c_str());
+			threat = threat + manaChange;
+			(attacker)->getStorage("threatmana", std::to_string(threat)); }
+			
 		int32_t oldMana = target->getMana();
 		target->changeMana(manaChange);
 		if(oldMana != target->getMana() && g_config.getBool(ConfigManager::SHOW_MANA_CHANGE) && !target->isGhost() &&
@@ -5046,6 +5060,13 @@ bool Game::combatChangeBarrier(Creature* attacker, Creature* target, int32_t bar
 		if(deny)
 			return false;
 
+		if((attacker) && attacker->getCreature()) {
+			std::string changer;
+			(attacker)->getStorage("threatbarrier", changer);
+			int32_t threat = atoi(changer.c_str());
+			threat = threat + barrierChange;
+			(attacker)->getStorage("threatbarrier", std::to_string(threat)); }
+			
 		int32_t oldBarrier = target->getBarrier();
 		target->changeBarrier(barrierChange);
 		if(oldBarrier != target->getBarrier() && !target->isGhost() || !target->getMonster())

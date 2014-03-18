@@ -110,6 +110,7 @@ class Monster : public Creature
 
 		virtual void resetLight();
 		virtual bool getCombatValues(int32_t& min, int32_t& max);
+		virtual bool getThreat(Creature* creature, int32_t& value);
 
 		virtual void onAttacking(uint32_t interval);
 		virtual void doAttacking(uint32_t interval);
