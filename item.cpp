@@ -42,6 +42,7 @@ extern Game g_game;
 extern ConfigManager g_config;
 extern MoveEvents* g_moveEvents;
 
+
 Items Item::items;
 Item* Item::CreateItem(const uint16_t type, uint16_t amount/* = 0*/)
 {

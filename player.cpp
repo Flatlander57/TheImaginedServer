@@ -606,7 +606,7 @@ void Player::sendIcons() const
 	client->sendIcons(icon_bitset.to_ulong());
 }
 
-void Player::updateInventoryWeight()
+void Player::updateInventoryWeight(bool start)
 {
 	inventoryWeight = 0.00;
 	if(hasFlag(PlayerFlag_HasInfiniteCapacity)
@@ -619,7 +619,11 @@ void Player::updateInventoryWeight()
 			inventoryWeight += item->getWeight();
 	}
 	if(g_config.getBool(ConfigManager::CAP_SPEED_LOSS))
+	{
 		updateBaseSpeed();
+		if(start)
+			g_game.changeSpeed(this, 0);
+	}
 		
 }
 
@@ -1022,9 +1026,14 @@ DepotChest* Player::getDepotChest(uint32_t depotId, bool autoCreate)
 	if(!autoCreate)
 		return NULL;
 
+	std::string changer;
+	getStorage("depotcap", changer);
+	int32_t value = atoi(changer.c_str());
+		
 	DepotChest* depotChest = new DepotChest(ITEM_DEPOT);
 	depotChest->addRef();
 	depotChest->setMaxDepotLimit((group != NULL ? group->getDepotLimit(isPremium()) : 1000));
+	depotChest->setMaxDepotCap(value);
 	depotChests[depotId] = depotChest;
 	return depotChest;
 }
@@ -1138,6 +1147,10 @@ void Player::sendCancelMessage(ReturnValue message) const
 
 		case RET_DEPOTISFULL:
 			sendCancel("Your depot is full. Remove surplus items before storing new ones.");
+			break;
+		
+		case RET_DEPOTISHEAVY:
+			sendCancel("This item is too heavy. Remove surplus items before storing new ones.");
 			break;
 
 		case RET_CANNOTUSETHISOBJECT:

@@ -59,6 +59,8 @@ extern Actions actions;
 extern CreatureEvents* g_creatureEvents;
 extern Chat g_chat;
 
+int MAX_STACK_TILES = 25;
+
 template<class FunctionType>
 void ProtocolGame::addGameTaskInternal(uint32_t delay, const FunctionType& func)
 {
@@ -711,13 +713,13 @@ void ProtocolGame::GetTileDescription(const Tile* tile, NetworkMessage_ptr msg)
 	ItemVector::const_iterator it;
 	if(items)
 	{
-		for(it = items->getBeginTopItem(); (it != items->getEndTopItem() && count < 10); ++it, ++count)
+		for(it = items->getBeginTopItem(); (it != items->getEndTopItem() && count < MAX_STACK_TILES); ++it, ++count)
 			msg->putItem(*it);
 	}
 
 	if(creatures)
 	{
-		for(CreatureVector::const_reverse_iterator cit = creatures->rbegin(); (cit != creatures->rend() && count < 10); ++cit)
+		for(CreatureVector::const_reverse_iterator cit = creatures->rbegin(); (cit != creatures->rend() && count < MAX_STACK_TILES); ++cit)
 		{
 			if(!player->canSeeCreature(*cit))
 				continue;
@@ -736,7 +738,7 @@ void ProtocolGame::GetTileDescription(const Tile* tile, NetworkMessage_ptr msg)
 
 	if(items)
 	{
-		for(it = items->getBeginDownItem(); (it != items->getEndDownItem() && count < 10); ++it, ++count)
+		for(it = items->getBeginDownItem(); (it != items->getEndDownItem() && count < MAX_STACK_TILES); ++it, ++count)
 			msg->putItem(*it);
 	}
 }
@@ -2357,7 +2359,7 @@ void ProtocolGame::sendCloseContainer(uint32_t cid)
 
 void ProtocolGame::sendCreatureTurn(const Creature* creature, int16_t stackpos)
 {
-	if(stackpos >= 10 || !canSee(creature) || ((g_config.getBool(ConfigManager::SEE_THROUGH_WALLS)) && (!g_game.isSightClear(player->getPosition(), creature->getPosition(), false))))
+	if(stackpos >= MAX_STACK_TILES || !canSee(creature) || ((g_config.getBool(ConfigManager::SEE_THROUGH_WALLS)) && (!g_game.isSightClear(player->getPosition(), creature->getPosition(), false))))
 		return;
 
 	NetworkMessage_ptr msg = getOutputBuffer();
@@ -2769,7 +2771,7 @@ void ProtocolGame::sendMoveCreature(const Creature* creature, const Tile*, const
 			return;
 
 		TRACK_MESSAGE(msg);
-		if(teleport || oldStackpos >= 10)
+		if(teleport || oldStackpos >= MAX_STACK_TILES)
 		{
 			RemoveTileItem(msg, oldPos, oldStackpos);
 			AddMapDescription(msg, newPos);
@@ -2957,7 +2959,7 @@ void ProtocolGame::sendMoveCreature(const Creature* creature, const Tile*, const
 				return;
 
 			TRACK_MESSAGE(msg);
-			if(!teleport && (oldPos.z != 7 || newPos.z < 8) && oldStackpos < 10)
+			if(!teleport && (oldPos.z != 7 || newPos.z < 8) && oldStackpos < MAX_STACK_TILES)
 			{
 				msg->put<char>(0x6D);
 				msg->putPosition(oldPos);
@@ -3300,7 +3302,7 @@ void ProtocolGame::reloadCreature(const Creature* creature)
 
 	// we are cheating the client in here!
 	uint32_t stackpos = creature->getTile()->getClientIndexOfThing(player, creature);
-	if(stackpos >= 10)
+	if(stackpos >= MAX_STACK_TILES)
 		return;
 
 	NetworkMessage_ptr msg = getOutputBuffer();
@@ -3697,7 +3699,7 @@ void ProtocolGame::AddCreatureLight(NetworkMessage_ptr msg, const Creature* crea
 //tile
 void ProtocolGame::AddTileItem(NetworkMessage_ptr msg, const Position& pos, uint32_t stackpos, const Item* item)
 {
-	if(stackpos >= 10)
+	if(stackpos >= MAX_STACK_TILES)
 		return;
 
 	msg->put<char>(0x6A);
@@ -3708,7 +3710,7 @@ void ProtocolGame::AddTileItem(NetworkMessage_ptr msg, const Position& pos, uint
 
 void ProtocolGame::AddTileCreature(NetworkMessage_ptr msg, const Position& pos, uint32_t stackpos, const Creature* creature)
 {
-	if(stackpos >= 10)
+	if(stackpos >= MAX_STACK_TILES)
 		return;
 
 	if((!g_game.isSightClear(player->getPosition(), pos, false)) && (g_config.getBool(ConfigManager::SEE_THROUGH_WALLS)))
@@ -3727,7 +3729,7 @@ void ProtocolGame::AddTileCreature(NetworkMessage_ptr msg, const Position& pos, 
 void ProtocolGame::UpdateTileItem(NetworkMessage_ptr msg, const Position& pos, uint32_t stackpos, const Item* item)
 {
 		
-	if(stackpos >= 10)
+	if(stackpos >= MAX_STACK_TILES)
 		return;
 
 	msg->put<char>(0x6B);
@@ -3739,7 +3741,7 @@ void ProtocolGame::UpdateTileItem(NetworkMessage_ptr msg, const Position& pos, u
 void ProtocolGame::RemoveTileItem(NetworkMessage_ptr msg, const Position& pos, uint32_t stackpos)
 {
 
-	if(stackpos >= 10)
+	if(stackpos >= MAX_STACK_TILES)
 		return;
 
 	msg->put<char>(0x6C);

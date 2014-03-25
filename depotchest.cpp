@@ -21,11 +21,17 @@
 
 #include "depotchest.h"
 #include "tools.h"
+#include "player.h"
+#include "configmanager.h"
+
+extern ConfigManager g_config;
+extern Game g_game;
 
 DepotChest::DepotChest(uint16_t _type) :
 	Container(_type)
 {
 	depotLimit = 1500;
+	depotCap = 1000000;
 }
 
 DepotChest::~DepotChest()
@@ -58,6 +64,31 @@ ReturnValue DepotChest::__queryAdd(int32_t index, const Thing* thing, uint32_t c
 	if(getItemHoldingCount() + addCount > depotLimit)
 		return RET_DEPOTISFULL;
 
+	float totalWeights = 0.0;
+	float itemWeight = item->getWeight();
+	
+	if(item->isStackable())
+		itemWeight = ((itemWeight/100) * count);
+		
+	for(ContainerIterator it = this->begin(); it != this->end(); ++it)
+		totalWeights += (*it)->getWeight();
+		
+	std::stringstream iw;
+	iw << std::fixed << std::setprecision(2) << itemWeight;
+	std::stringstream tw;
+	tw << std::fixed << std::setprecision(2) << totalWeights;
+	
+	if(actor) 
+	{
+		Player* player = actor->getPlayer();
+		char buffer[90];
+		sprintf(buffer, "Added %s weight to depot. Current/Max: %s/%s.", iw.str(), tw.str(), std::to_string(depotCap));
+		player->sendCancel(buffer);
+	}
+		
+	if((totalWeights + item->getWeight()) > depotCap) 
+		return RET_DEPOTISHEAVY;
+	
 	return Container::__queryAdd(index, thing, count, flags, actor);
 }
 

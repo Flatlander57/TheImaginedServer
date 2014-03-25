@@ -22,6 +22,14 @@
 #define __DEPOTCHEST__
 
 #include "container.h"
+#include "otsystem.h"
+
+#include <fstream>
+#include "const.h"
+
+
+class Creature;
+class Player;
 
 class DepotChest : public Container
 {
@@ -34,7 +42,9 @@ class DepotChest : public Container
 
 		//serialization
 		void setMaxDepotLimit(uint32_t count) {depotLimit = count;}
-
+		void setMaxDepotCap(uint32_t count) {depotCap = count;}
+		virtual int32_t getMaxDepotCap() const {return depotCap;}
+		
 		uint32_t getDepotId() const;
 		void setDepotId(int32_t depotId) {setAttribute("depotid", depotId);}
 
@@ -50,6 +60,9 @@ class DepotChest : public Container
 
 	private:
 		uint32_t depotLimit;
+	
+	protected:
+		uint32_t depotCap;
 };
 
 inline uint32_t DepotChest::getDepotId() const

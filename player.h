@@ -857,7 +857,7 @@ class Player : public Creature, public Cylinder
 		bool gainExperience(double& gainExp, Creature* target);
 		bool rateExperience(double& gainExp, Creature* target);
 
-		void updateInventoryWeight();
+		void updateInventoryWeight(bool start = true);
 		void updateInventoryGoods(uint32_t itemId);
 		void updateItemsLight(bool internal = false);
 		void updateWeapon();
@@ -874,7 +874,7 @@ class Player : public Creature, public Cylinder
 				baseSpeed = SPEED_MAX;
 				
 			if(g_config.getBool(ConfigManager::CAP_SPEED_LOSS))
-				baseSpeed -= (int32_t)std::ceil((vocation->getBaseSpeed() * (0.01*((inventoryWeight+1)/getCapacity())*(100*(((inventoryWeight+1)/getCapacity()))))));
+				baseSpeed -= (int32_t)std::ceil((vocation->getBaseSpeed() * (0.01*((inventoryWeight+1)/getCapacity())*(100*(((inventoryWeight+1)/getCapacity())))))+100);
 		}
 
 		void setNextWalkActionTask(SchedulerTask* task);

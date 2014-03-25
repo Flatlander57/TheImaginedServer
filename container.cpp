@@ -183,6 +183,7 @@ uint32_t Container::getItemHoldingCount() const
 	return counter;
 }
 
+
 bool Container::isHoldingItem(const Item* item) const
 {
 	for(ContainerIterator it = begin(); it != end(); ++it)

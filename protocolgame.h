@@ -35,6 +35,7 @@ class Quest;
 class DepotChest;
 class DepotLocker;
 
+
 typedef std::list<std::pair<uint16_t, std::string> > ChannelsList;
 typedef boost::shared_ptr<NetworkMessage> NetworkMessage_ptr;
 class ProtocolGame : public Protocol
